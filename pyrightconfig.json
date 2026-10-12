@@ -1,0 +1,6 @@
+{
+  "exclude": [".venv"],
+  "venvPath": "./",
+  "venv": ".venv",
+  "typeCheckingMode": "basic"
+}
