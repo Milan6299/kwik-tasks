@@ -2,6 +2,7 @@ import sqlite3
 from datetime import date, timedelta
 
 from kwik_tasks.tasks.tag import create_tag, get_tag_id_by_name
+from kwik_tasks.tasks.task_events import create_task_event
 
 
 def create_task_with_tag(
@@ -10,7 +11,7 @@ def create_task_with_tag(
     tag_name: str,
     start_date: str | None = None,
     due_date: str | None = None,
-    priority: int = 2,
+    priority: int = 3,
     recurrence_days: int | None = None,
 ):
     title = title.strip()
@@ -44,9 +45,7 @@ def create_task_with_tag(
         (title, tag_id, start_date, due_date, priority, recurrence_days),
     )
     if cur.lastrowid is not None:
-        return cx.execute(
-            "select * from tasks where id = ?", (cur.lastrowid,)
-        ).fetchone()
+        return get_task(cx, cur.lastrowid)
     raise ValueError("Unable to create task!")
 
 
@@ -58,7 +57,7 @@ def create_task(
     due_date: str | None = None,
     priority: int = 2,
     recurrence_days: int | None = None,
-) -> int:
+):
     title = title.strip()
     if not title:
         raise ValueError("Title cannot be empty")
@@ -85,8 +84,9 @@ def create_task(
         """,
         (title, tag_id, start_date, due_date, priority, recurrence_days),
     )
+
     if cur.lastrowid is not None:
-        return cur.lastrowid
+        return get_task(cx, cur.lastrowid)
     raise ValueError("Unable to create task!")
 
 
@@ -221,13 +221,13 @@ def record_occurrence(cx: sqlite3.Connection, task_id: int, action: str) -> bool
 
     occurrence_date = task["start_date"]
 
-    cx.execute(
-        """
-        INSERT INTO task_events (task_id, action, occurrence_date)
-        VALUES (?, ?, ?)
-        """,
-        (task_id, action, occurrence_date),
-    )
+    try:
+        create_task_event(
+            cx, task_id=task_id, action=action, occurrence_date=occurrence_date
+        )
+    except Exception as e:
+        print(e)
+        raise ValueError("Unable to create task event!")
 
     if task["recurrence_days"] is None:
         cx.execute(

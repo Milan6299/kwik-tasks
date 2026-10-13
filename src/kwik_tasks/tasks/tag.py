@@ -8,7 +8,7 @@ def normalize_tag(name: str) -> str:
     return name
 
 
-def create_tag(cx: sqlite3.Connection, name: str) -> int:
+def create_tag(cx: sqlite3.Connection, name: str):
     name = normalize_tag(name)
 
     cur = cx.execute(
@@ -18,7 +18,7 @@ def create_tag(cx: sqlite3.Connection, name: str) -> int:
 
     if cur.lastrowid is None:
         raise ValueError("Unable to create tag!")
-    return cur.lastrowid
+    return get_tag(cx, cur.lastrowid)
 
 
 def get_tag(cx: sqlite3.Connection, tag_id: int):
@@ -26,7 +26,7 @@ def get_tag(cx: sqlite3.Connection, tag_id: int):
         "SELECT * FROM tags WHERE id = ?",
         (tag_id,),
     ).fetchone()
-    return row["id"] if row is not None else None
+    return row if row is not None else None
 
 
 def get_tag_id_by_name(cx: sqlite3.Connection, tag_name: str):
@@ -53,7 +53,7 @@ def get_or_create_tag(cx: sqlite3.Connection, name: str) -> int:
 
 
 def list_tags(cx: sqlite3.Connection):
-    return cx.execute("SELECT * FROM tags ORDER BY name").fetchall()
+    return cx.execute("SELECT * FROM tags ORDER BY id").fetchall()
 
 
 def update_tag(cx: sqlite3.Connection, tag_id: int, name: str) -> bool:

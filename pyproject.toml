@@ -7,10 +7,12 @@ authors = [
     { name = "Milan6299", email = "milanmahapatra140@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "tabulate>=0.10.0",
+]
 
 [project.scripts]
-kwik-tasks = "kwik_tasks:main"
+tasks = "kwik_tasks.cli.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.13.0,<0.14.0"]

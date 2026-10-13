@@ -38,7 +38,7 @@ with get_connection() as cx:
             tag_id INTEGER NOT NULL REFERENCES tags(id),
             start_date TEXT NOT NULL DEFAULT (date('now')),
             due_date TEXT,
-            priority INTEGER NOT NULL DEFAULT 2
+            priority INTEGER NOT NULL DEFAULT 3
                 CHECK (priority BETWEEN 1 AND 3),
             recurrence_days INTEGER
                 CHECK (recurrence_days IS NULL OR recurrence_days > 0),
