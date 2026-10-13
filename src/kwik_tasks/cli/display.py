@@ -27,6 +27,7 @@ def display_tasks(tasks):
             task["title"],
             task["tag"],
             parse_priority(task["priority"]),
+            task["recurrence_days"],
             task["due_date"] or "",
         ]
         for task in tasks
@@ -35,7 +36,8 @@ def display_tasks(tasks):
     print(
         tabulate(
             rows,
-            headers=["ID", "Title", "Tag", "Priority", "Due Date"],
+            headers=["ID", "Title", "Tag", "Priority", "Repeat", "Due Date"],
             tablefmt="simple_outline",
+            missingval="-",
         )
     )

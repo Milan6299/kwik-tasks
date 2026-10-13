@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import date, timedelta
 
-from kwik_tasks.tasks.tag import create_tag, get_tag_id_by_name
+from kwik_tasks.tasks.tag import create_tag, get_or_create_tag
 from kwik_tasks.tasks.task_events import create_task_event
 
 
@@ -32,9 +32,9 @@ def create_task_with_tag(
     if recurrence_days is not None and recurrence_days < 1:
         raise ValueError("Recurrence must be at least 1 day")
 
-    tag_id = get_tag_id_by_name(cx, tag_name)
+    tag_id = get_or_create_tag(cx, tag_name)
     if tag_id is None:
-        tag_id = create_tag(cx, tag_name)
+        raise ValueError("Unable to create tag!")
 
     cur = cx.execute(
         """
@@ -102,10 +102,24 @@ def get_task(cx: sqlite3.Connection, task_id: int):
     ).fetchone()
 
 
-def list_tasks(cx: sqlite3.Connection, include_deleted: bool = False):
-    condition = (
-        "" if include_deleted else "WHERE tasks.active = 1 AND tasks.deleted_at IS NULL"
-    )
+def list_tasks(
+    cx: sqlite3.Connection, include_deleted: bool = False, status: str | None = None
+):
+
+    if status is None:
+        condition = ""
+    elif status == "active":
+        condition = (
+            ""
+            if include_deleted
+            else "WHERE tasks.active = 1 AND tasks.deleted_at IS NULL"
+        )
+    elif status == "inactive":
+        condition = (
+            ""
+            if include_deleted
+            else "WHERE tasks.active = 0 AND tasks.deleted_at IS NULL"
+        )
 
     return cx.execute(
         f"""

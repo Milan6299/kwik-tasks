@@ -1,7 +1,7 @@
 import sys
 
 from kwik_tasks.cli.display import display_tags, display_tasks
-from kwik_tasks.tasks.tag import create_tag, get_tag, list_tags
+from kwik_tasks.tasks.tag import create_tag, list_tags
 from kwik_tasks.tasks.task import (
     create_task,
     create_task_with_tag,
@@ -18,21 +18,24 @@ def handle_task_add(cx, args):
             title=args.title,
             tag_name=args.tag,
             due_date=args.due,
+            recurrence_days=args.repeat,
         )
     else:
         task = create_task(
-            cx,
-            args.title,
-            args.tag_id,
-            due_date=args.due,
+            cx, args.title, args.tag_id, due_date=args.due, recurrence_days=args.repeat
         )
 
     print("Created task:")
-    print(f"[{task['id']}] {task['title']} - <{task['tag']}>")
+    display_tasks([task])
 
 
 def handle_task_list(cx, args):
-    tasks = list_tasks(cx)
+    tasks = list_tasks(cx, status="active")
+    if args.all:
+        tasks = list_tasks(cx)
+    if args.inactive:
+        tasks = list_tasks(cx, status="inactive")
+
     if not tasks:
         print("No tasks found!")
         return
